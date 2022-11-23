@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
 
     //Variables
     [Header("Speed controls")]
+    [SerializeField] float moveSpeed;
     [SerializeField] float runSpeed;
 
     Vector3 moveDirection;
@@ -22,6 +23,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float groundCheckDistance;
     [SerializeField] LayerMask groundMask;
     [SerializeField] float gravity;
+
+    [Header("Jump Controls")]
+    [SerializeField] float jumpHeight;
 
     //References
     CharacterController controller;
@@ -45,18 +49,56 @@ public class PlayerController : MonoBehaviour
     {
         isGrounded = Physics.CheckSphere(transform.position, groundCheckDistance, groundMask);
 
+        if(isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f;
+        }
+
         float horizontalMovement = Input.GetAxis("Horizontal");
         float verticalMovement = Input.GetAxis("Vertical");
 
-        moveDirection = new Vector3(horizontalMovement, 0, verticalMovement) * runSpeed * Time.deltaTime;
+        moveDirection = new Vector3(horizontalMovement, 0, verticalMovement);
+        moveDirection = transform.TransformDirection(moveDirection);
 
-        controller.Move(moveDirection);
-        
+        if (isGrounded)
+        {
+            if (moveDirection != Vector3.zero)
+            {
+                Run();
+            }
+            else if (moveDirection == Vector3.zero)
+            {
+                Idle();
+            }
+
+            moveDirection *= moveSpeed;
+
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                PlayerJump();
+            }
+        } 
+
+
+        controller.Move(moveDirection * Time.deltaTime);
+
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+    }
+
+    void Run()
+    {
+        moveSpeed = runSpeed;
+    }
+
+    void Idle()
+    {
+        moveSpeed = 0;
     }
 
     void PlayerJump()
     {
-        //Add code here later
+        velocity.y = Mathf.Sqrt(jumpHeight * -2 * gravity);
     }
 
     void PlayerFire()
