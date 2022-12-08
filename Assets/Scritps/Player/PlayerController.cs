@@ -89,6 +89,7 @@ public class PlayerController : MonoBehaviour
     void Run()
     {
         moveSpeed = runSpeed;
+
     }
 
     void Idle()
